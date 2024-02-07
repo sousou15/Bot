@@ -27,7 +27,7 @@ try:
     elif 0 <= sentimiento.polarity <= 0.3:
         e_animo = "neutro"
     elif 0.3 < sentimiento.polarity <= 0.5:
-        e_animo = "contento"
+        e_animo = "más feliz"
     elif 0.5 < sentimiento.polarity <= 0.7:
         e_animo = "emocionado"
     elif 0.7 < sentimiento.polarity <= 0.9:

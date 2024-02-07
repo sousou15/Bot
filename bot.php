@@ -29,7 +29,7 @@ function manejarMensaje($mensaje) {
     global $client, $api_key, $last_processed_message_id;
 
     // Verificar si el mensaje es el comando /start
-    if (isset($mensaje['text']) && $mensaje['text'] == '/start') {
+    if ((isset($mensaje['text']) && $mensaje['text']) == '/start') {
         // Verificar si ya se envió el mensaje de inicio antes
         if ($mensaje['message_id'] > $last_processed_message_id) {
             enviarMensaje($mensaje['chat']['id'], 'Hola! ¿Cómo te sientes hoy? Por favor, describe tu estado de ánimo.');
@@ -104,7 +104,7 @@ function manejarMensajeNormal($mensaje) {
         $data = json_decode($response->getBody(), true);
 
         // Construir el mensaje con las películas encontradas
-        $respuesta = "Películas adecuadas para cuando estás $estado_animo:\n";
+        $respuesta = "Películas adecuadas para cuando estás $output:\n";
         foreach ($data['results'] as $movie) {
             $respuesta .= $movie['title'] . " (" . $movie['release_date'] . ")\n";
             $respuesta .= "https://image.tmdb.org/t/p/w500" . $movie['poster_path'] . "\n";
@@ -136,22 +136,22 @@ while (true) {
     foreach ($updates['result'] as $update) {
         if (isset($update['message'])) {
             $mensaje = $update['message'];
-            // Verificar si el mensaje es el comando /start
-            if (isset($mensaje['text']) && $mensaje['text'] == '/start') {
-                enviarMensaje($mensaje['chat']['id'], 'Hola! ¿Cómo te sientes hoy? Por favor, describe tu estado de ánimo.');
-            } else {
-                // Si no es el comando /start, llamar a la función para manejar el mensaje normalmente
-                manejarMensajeNormal($mensaje, $api_key);
+            // Verificar si el mensaje es más reciente que el último procesado
+            if ($mensaje['message_id'] > $last_processed_message_id) {
+                if (isset($mensaje['text']) && $mensaje['text'] == '/start') {
+                    enviarMensaje($mensaje['chat']['id'], 'Hola! ¿Cómo te sientes hoy? Por favor, describe tu estado de ánimo.');
+                } else {
+                    // Si no es el comando /start, llamar a la función para manejar el mensaje normalmente
+                    manejarMensajeNormal($mensaje);
+                }
+                // Actualizar el ID del último mensaje procesado
+                $last_processed_message_id = $mensaje['message_id'];
             }
-
         }
     }
-    // Actualizar el ID del último mensaje procesado
-    $last_processed_message_id = $mensaje['message_id'];
     // Esperar un segundo antes de la próxima consulta (evitar exceso de consumo de recursos)
     sleep(1);
 }
-
 
 
 ?>
