@@ -20,8 +20,6 @@ try:
 
     # Convertimos el sentimiento detectado en un estado de ánimo
     e_animo = ""
-    print("Polaridad del sentimiento:", sentimiento.polarity)
-
     if sentimiento.polarity > 0.3:
         e_animo = "feliz"
     elif sentimiento.polarity < -0.3:
