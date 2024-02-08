@@ -51,7 +51,7 @@ function manejarMensajeNormal($mensaje) {
     $estado_animo = $mensaje['text'];
 
     // Ejecutar el script de Python con el estado de ánimo como argumento
-    $output = exec("python sentiments.py \"$estado_animo\"");
+    $output = exec("python sentiments2.py \"$estado_animo\"");
 
     // Definimos los géneros deseados
     $genre_ids_array = [];
@@ -139,7 +139,7 @@ while (true) {
             // Verificar si el mensaje es más reciente que el último procesado
             if ($mensaje['message_id'] > $last_processed_message_id) {
                 if (isset($mensaje['text']) && $mensaje['text'] == '/start') {
-                    enviarMensaje($mensaje['chat']['id'], 'Hola! ¿Cómo te sientes hoy? Por favor, describe tu estado de ánimo.');
+                    enviarMensaje($mensaje['chat']['id'], 'Hola! ¿Cómo te sientes hoy? Por favor, describe tu estado de ánimo. babababab');
                 } else {
                     // Si no es el comando /start, llamar a la función para manejar el mensaje normalmente
                     manejarMensajeNormal($mensaje);
