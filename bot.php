@@ -4,7 +4,8 @@ require 'vendor/autoload.php';
 use GuzzleHttp\Client;
 
 // Token de acceso del bot de Telegram
-$bot_token = '6940266318:AAFY6syLocYDKe3ZtTFC1lTWjGkp5YpgFL0';
+// $bot_token = '6940266318:AAFY6syLocYDKe3ZtTFC1lTWjGkp5YpgFL0';
+$bot_token = '6554813207:AAGGK4LXVNOr7CV6JM_EeOsdybj_fuXsmzI';
 
 $api_key = 'b2d11b0c7ab0e17b36609db82291a79f'; // Cambia 'TU_CLAVE_DE_API_DE_TMDB' por tu clave de API real
 
@@ -51,7 +52,7 @@ function manejarMensajeNormal($mensaje) {
     $estado_animo = $mensaje['text'];
 
     // Ejecutar el script de Python con el estado de ánimo como argumento
-    $output = exec("python sentiments2.py \"$estado_animo\"");
+    $output = exec("python sentiments3.py \"$estado_animo\"");
 
     // Definimos los géneros deseados
     $genre_ids_array = [];
@@ -139,7 +140,7 @@ while (true) {
             // Verificar si el mensaje es más reciente que el último procesado
             if ($mensaje['message_id'] > $last_processed_message_id) {
                 if (isset($mensaje['text']) && $mensaje['text'] == '/start') {
-                    enviarMensaje($mensaje['chat']['id'], 'Hola! ¿Cómo te sientes hoy? Por favor, describe tu estado de ánimo. babababab');
+                    enviarMensaje($mensaje['chat']['id'], 'Hola! ¿Cómo te sientes hoy? Por favor, describe tu estado de ánimo.');
                 } else {
                     // Si no es el comando /start, llamar a la función para manejar el mensaje normalmente
                     manejarMensajeNormal($mensaje);

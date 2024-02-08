@@ -37,8 +37,8 @@ try:
         e_animo = "triste"
 
     # Devolvemos el estado de ánimo al script PHP
-    print(e_animo, translated_text, compound_score)
-    # print(e_animo)
+    # print(e_animo, translated_text, compound_score)
+    print(e_animo)
 
 except Exception as e:
     print("Error:", e)
