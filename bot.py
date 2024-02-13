@@ -1,60 +1,86 @@
-import subprocess
-from telegram import Update
 import requests
-from telegram.ext import Updater, CommandHandler, MessageHandler, filters
+import time
+import subprocess
 
-# Token de acceso al bot proporcionado por BotFather
-TOKEN = '6940266318:AAFY6syLocYDKe3ZtTFC1lTWjGkp5YpgFL0'
+bot_token = '6554813207:AAGGK4LXVNOr7CV6JM_EeOsdybj_fuXsmzI'
+api_key = 'b2d11b0c7ab0e17b36609db82291a79f'
 
-# Función para manejar el comando /start
-def start(update, context):
-    update.message.reply_text("¡Hola! ¿Cuál es tu estado de ánimo?")
+last_processed_message_id = 0
 
-# Función para manejar los mensajes de texto
-def echo(update, context):
-    estado_animo = update.message.text
-    output = subprocess.getoutput(f"python sentiments.py \"{estado_animo}\"")
-    
-    switch_output = {
+def enviar_mensaje(chat_id, mensaje):
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    params = {'chat_id': chat_id, 'text': mensaje}
+    response = requests.get(url, params=params)
+    return response.json()
+
+def manejar_mensaje_normal(mensaje):
+    global last_processed_message_id
+
+    estado_animo = mensaje['text']
+    output = subprocess.check_output(["python", "sentiments3.py", estado_animo]).decode().strip()
+
+    genre_ids_dict = {
         "feliz": [28, 12, 16, 35],
-        "triste": [10752, 18, 80, 10751],
+        "triste": [18, 80, 10749],
         "neutro": [878, 12, 28, 27],
         "contento": [28, 12, 878],
         "emocionado": [18, 27, 53],
-        "entusiasmado": [35, 10751, 10749],
-        "ansioso": [53, 9648, 10749]
+        "mal": [99],
+        "entusiasmado": [35, 10751, 10749, 35],
+        "ansioso": [53, 9648, 10749, 27]
     }
 
-    genre_ids_array = switch_output.get(output, [])
-    
-    if not genre_ids_array:
-        update.message.reply_text("Estado de ánimo no reconocido")
+    if output not in genre_ids_dict:
+        enviar_mensaje(mensaje['chat']['id'], "Estado de ánimo no reconocido")
         return
 
+    genre_ids_array = genre_ids_dict[output]
+
     try:
-        url = 'https://api.themoviedb.org/3/discover/movie'
-        params = {'api_key': 'b2d11b0c7ab0e17b36609db82291a79f', 'with_genres': ','.join(map(str, genre_ids_array)), 'language': 'es', 'page': 1}
-        response = requests.get(url, params=params)
+        response = requests.get("https://api.themoviedb.org/3/discover/movie", params={
+            'api_key': api_key,
+            'with_genres': ','.join(map(str, genre_ids_array)),
+            'language': 'es',
+            'page': 1
+        })
         data = response.json()
 
-        respuesta = "Películas adecuadas para cuando estás {}:\n".format(estado_animo)
+        mensaje_estado = f"Películas adecuadas para cuando estás {output}:\n"
+        enviar_mensaje(mensaje['chat']['id'], mensaje_estado)
+        
         for movie in data['results']:
-            respuesta += "{} ({})\n".format(movie['title'], movie['release_date'])
-            respuesta += "https://image.tmdb.org/t/p/w500{}\n".format(movie['poster_path'])
-            respuesta += "https://image.tmdb.org/t/p/original{}\n\n".format(movie['backdrop_path'])
-
-        update.message.reply_text(respuesta)
+            respuesta = f"{movie['title']} ({movie['release_date']})\n"
+            respuesta += f"Póster de la peli aquí: https://image.tmdb.org/t/p/w500{movie['poster_path']}\n"
+            respuesta += f"https://image.tmdb.org/t/p/original{movie['backdrop_path']}\n\n"
+            enviar_mensaje(mensaje['chat']['id'], respuesta)
     except Exception as e:
-        update.message.reply_text('Error al obtener películas: {}'.format(e))
+        enviar_mensaje(mensaje['chat']['id'], f"Error al obtener películas: {str(e)}")
 
-def main():
-    updater = Updater(TOKEN)
-    dp = updater.dispatcher
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(MessageHandler(filters.text & ~filters.command, echo))
-    updater.start_polling()
-    updater.idle()
+def poll_updates():
+    global last_processed_message_id
 
+    while True:
+        response = requests.get(f"https://api.telegram.org/bot{bot_token}/getUpdates")
+        updates = response.json()['result']
 
-if __name__ == '__main__':
-    main()
+        for update in updates:
+            if 'message' in update:
+                mensaje = update['message']
+                if mensaje['message_id'] > last_processed_message_id:
+                    if 'text' in mensaje:
+                        if mensaje['text'] == '/start':
+                            enviar_mensaje(mensaje['chat']['id'], 'Hola! ¿Cómo te sientes hoy? Por favor, describe tu estado de ánimo. /help para consultar ayuda.')
+                        elif mensaje['text'] == '/help':
+                            ayuda = "Bienvenido al bot de películas! Aquí puedes encontrar recomendaciones de películas basadas en tu estado de ánimo.\n"
+                            ayuda += "Para comenzar, simplemente usa /start y envía un mensaje describiendo cómo te sientes hoy cuando el bot te lo pida.\n"
+                            ayuda += "El bot te entenderá y te recomendará algunas películas.\n"
+                            ayuda += "El bot procesa el lenguaje natural."
+                            enviar_mensaje(mensaje['chat']['id'], ayuda)
+                        else:
+                            manejar_mensaje_normal(mensaje)
+                    last_processed_message_id = mensaje['message_id']
+
+        time.sleep(1)
+
+if __name__ == "__main__":
+    poll_updates()
