@@ -14,12 +14,24 @@ api_key = os.environ.get('api_key')
 last_processed_message_id = 0
 
 def enviar_mensaje(chat_id, mensaje):
+    """
+    Envía un mensaje al chat de Telegram.
+
+    :param chat_id: El ID del chat.
+    :param mensaje: El mensaje a enviar.
+    :return: La respuesta JSON del servidor de Telegram.
+    """
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
     params = {'chat_id': chat_id, 'text': mensaje}
     response = requests.get(url, params=params)
     return response.json()
 
 def manejar_mensaje_normal(mensaje):
+    """
+    Maneja mensajes normales.
+
+    :param mensaje: El mensaje a manejar.
+    """
     global last_processed_message_id
 
     estado_animo = mensaje['text']
@@ -63,6 +75,9 @@ def manejar_mensaje_normal(mensaje):
         enviar_mensaje(mensaje['chat']['id'], f"Error al obtener películas: {str(e)}")
 
 def poll_updates():
+    """
+    Realiza el polling de actualizaciones de Telegram y maneja los mensajes.
+    """
     global last_processed_message_id
 
     while True:
