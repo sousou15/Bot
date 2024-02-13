@@ -1,7 +1,15 @@
 import requests
+import os
+from dotenv import load_dotenv
+
+# Cargar variables de entorno desde el archivo .env
+load_dotenv()
+
+# Obtener el bot_token de las variables de entorno
+bot_token = os.environ.get('bot_token')
 
 # URL base
-base_url = "https://api.telegram.org/bot6554813207:AAGGK4LXVNOr7CV6JM_EeOsdybj_fuXsmzI/"
+base_url = f"https://api.telegram.org/bot{bot_token}/"
 #GetUpdates
 def get_updates():
     url = base_url + "getUpdates"

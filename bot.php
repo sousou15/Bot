@@ -1,18 +1,42 @@
 <?php
 
+/**
+ * @file
+ * Bot de Telegram para recomendar películas basadas en el estado de ánimo del usuario.
+ */
+
 require 'vendor/autoload.php';
 use GuzzleHttp\Client;
 
-// Token de acceso del bot de Telegram
-// $bot_token = '6940266318:AAFY6syLocYDKe3ZtTFC1lTWjGkp5YpgFL0';
+// Cargar las variables de entorno desde el archivo .env
+// $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+// $dotenv->load();
+
 $bot_token = '6554813207:AAGGK4LXVNOr7CV6JM_EeOsdybj_fuXsmzI';
+$api_key = 'b2d11b0c7ab0e17b36609db82291a79f';
 
-$api_key = 'b2d11b0c7ab0e17b36609db82291a79f'; // Cambia 'TU_CLAVE_DE_API_DE_TMDB' por tu clave de API real
+/**
+ * Token de acceso del bot de Telegram.
+ */
+// $bot_token = getenv('bot_token');
 
-// Variable para almacenar el ID del último mensaje procesado
+/**
+ * Clave de API de The Movie Database (TMDb).
+ */
+// $api_key = getenv('api_key'); // Cambia por tu clave de API real
+
+/**
+ * Variable para almacenar el ID del último mensaje procesado.
+ */
 $last_processed_message_id = 0;
 
-// Método para enviar mensajes al chat de Telegram
+/**
+ * Método para enviar mensajes al chat de Telegram.
+ *
+ * @param int $chat_id El ID del chat.
+ * @param string $mensaje El mensaje a enviar.
+ * @return mixed
+ */
 function enviarMensaje($chat_id, $mensaje) {
     global $bot_token;
     $client = new Client();
@@ -25,6 +49,12 @@ function enviarMensaje($chat_id, $mensaje) {
     return $response->getBody();
 }
 
+/**
+ * Función para manejar mensajes normales.
+ *
+ * @param array $mensaje El mensaje a manejar.
+ * @return void
+ */
 function manejarMensajeNormal($mensaje) {
     global $client, $api_key;
 
@@ -68,7 +98,6 @@ function manejarMensajeNormal($mensaje) {
             exit;
     }
 
-
     // Ejecutar la llamada a la API de TMDb para obtener películas de los géneros deseados
     try {
         // Realizamos la llamada a la API de TMDb para obtener películas de los géneros deseados
@@ -97,15 +126,11 @@ function manejarMensajeNormal($mensaje) {
             // Enviar la respuesta al chat de Telegram
             enviarMensaje($mensaje['chat']['id'], $respuesta);
         }
-
-
     } catch (Exception $e) {
         // Manejamos errores de la API
         enviarMensaje($mensaje['chat']['id'], 'Error al obtener películas: ' . $e->getMessage());
     }
 }
-
-
 
 // Inicializar el cliente Guzzle HTTP
 $client = new Client([
@@ -125,14 +150,14 @@ while (true) {
             // Verificar si el mensaje es más reciente que el último procesado
             if ($mensaje['message_id'] > $last_processed_message_id) {
                 if (isset($mensaje['text']) && $mensaje['text'] == '/start') {
-                    enviarMensaje($mensaje['chat']['id'], 'Hola! ¿Cómo te sientes hoy? Por favor, describe tu estado de ánimo. /help para consultar ayuda');
-                }else if (isset($mensaje['text']) && $mensaje['text'] == '/help') {
+                    enviarMensaje($mensaje['chat']['id'], 'Hola! ¿Cómo te sientes hoy? Por favor, describe tu estado de ánimo. /help para consultar ayuda.');
+                } else if (isset($mensaje['text']) && $mensaje['text'] == '/help') {
                     // Aquí proporciona la ayuda que deseas dar al usuario, por ejemplo:
                     $ayuda = "Bienvenido al bot de películas! Aquí puedes encontrar recomendaciones de películas basadas en tu estado de ánimo.";
                     $ayuda .= " Para comenzar, simplemente usa /start y envía un mensaje describiendo cómo te sientes hoy cuando el bot te lo pida.";
                     $ayuda .= "El bot te entenderá y te recomendará algunas películas.";
+                    $ayuda .= "El bot procesa el lenguaje natural.";
                     enviarMensaje($mensaje['chat']['id'], $ayuda);
-                
                 } else {
                     // Si no es el comando /start, llamar a la función para manejar el mensaje normalmente
                     manejarMensajeNormal($mensaje);
@@ -145,6 +170,3 @@ while (true) {
     // Esperar un segundo antes de la próxima consulta (evitar exceso de consumo de recursos)
     sleep(1);
 }
-
-
-?>
