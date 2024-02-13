@@ -1,9 +1,15 @@
 import requests
 import time
 import subprocess
+import os
+from dotenv import load_dotenv
 
-bot_token = '6554813207:AAGGK4LXVNOr7CV6JM_EeOsdybj_fuXsmzI'
-api_key = 'b2d11b0c7ab0e17b36609db82291a79f'
+# Cargar variables de entorno desde el archivo .env
+load_dotenv()
+
+# Obtener el bot_token de las variables de entorno
+bot_token = os.environ.get('bot_token')
+api_key = os.environ.get('api_key')
 
 last_processed_message_id = 0
 
