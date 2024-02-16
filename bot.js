@@ -26,6 +26,7 @@ let lastProcessedMessageId = 0;
  * @param {string} mensaje El mensaje a enviar.
  * @return {Promise<any>}
  */
+
 async function enviarMensaje(chat_id, mensaje) {
     try {
         const response = await axios.get(`https://api.telegram.org/bot${botToken}/sendMessage`, {
