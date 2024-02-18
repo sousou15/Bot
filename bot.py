@@ -68,6 +68,8 @@ def manejar_mensaje_normal(mensaje):
         
         for movie in data['results']:
             respuesta = f"{movie['title']} ({movie['release_date']})\n"
+            respuesta += f"📝Puntuación: {movie['vote_average']}-({movie['vote_count']})\n"
+            respuesta += f"🎬Sinopsis: {movie['overview']}\n"
             respuesta += f"Póster de la peli aquí: https://image.tmdb.org/t/p/w500{movie['poster_path']}\n"
             respuesta += f"https://image.tmdb.org/t/p/original{movie['backdrop_path']}\n\n"
             enviar_mensaje(mensaje['chat']['id'], respuesta)
