@@ -3,6 +3,8 @@ import time
 import subprocess
 import os
 from dotenv import load_dotenv
+import random
+import urllib.parse
 
 # Cargar variables de entorno desde el archivo .env
 load_dotenv()
@@ -26,6 +28,19 @@ def enviar_mensaje(chat_id, mensaje):
     response = requests.get(url, params=params)
     return response.json()
 
+def obtener_videos(movie_id):
+    """
+    Obtiene los videos asociados a una película desde la API de The Movie Database (TMDb).
+
+    :param movie_id: El ID de la película.
+    :return: Una lista de videos asociados a la película.
+    """
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}/videos"
+    params = {'api_key': api_key}
+    response = requests.get(url, params=params)
+    data = response.json()
+    return data.get('results', [])
+
 def manejar_mensaje_normal(mensaje):
     """
     Maneja mensajes normales.
@@ -37,13 +52,19 @@ def manejar_mensaje_normal(mensaje):
     estado_animo = mensaje['text']
     output = subprocess.check_output(["python", "sentiments3.py", estado_animo]).decode().strip()
 
+    aux_generos = [28, 12, 16, 35]
+    aux_generos_option = [35, 16, 10402, 10770]
+    # Seleccionar aleatoriamente uno de los vectores
+    vector_seleccionado = random.choice([aux_generos, aux_generos_option])
+    generos = [99, 18]
+    genero_seleccionado = random.choice(generos)
     genre_ids_dict = {
-        "feliz": [28, 12, 16, 35],
+        "feliz": [28, 12, 878],
         "triste": [18, 80, 10749],
         "neutro": [878, 12, 28, 27],
-        "contento": [28, 12, 878],
-        "emocionado": [18, 27, 53],
-        "mal": [99],
+        "emocionado":vector_seleccionado,
+        "contento": [35, 14, 53],
+        "mal": genero_seleccionado,
         "entusiasmado": [35, 10751, 10749, 35],
         "ansioso": [53, 9648, 10749, 27]
     }
@@ -67,9 +88,24 @@ def manejar_mensaje_normal(mensaje):
         enviar_mensaje(mensaje['chat']['id'], mensaje_estado)
         
         for movie in data['results']:
-            respuesta = f"{movie['title']} ({movie['release_date']})\n"
+            respuesta = f"*{movie['title']}* ({movie['release_date']})\n\n"
+            respuesta += f"📝Puntuación: {movie['vote_average']}/10 - ({movie['vote_count']}) votos\n\n"
+            respuesta += f"🎬Sinopsis: {movie['overview']}\n\n"
             respuesta += f"Póster de la peli aquí: https://image.tmdb.org/t/p/w500{movie['poster_path']}\n"
             respuesta += f"https://image.tmdb.org/t/p/original{movie['backdrop_path']}\n\n"
+            termino_busqueda = movie['title'] + " película" + movie['release_date']
+            # Codificar el término de búsqueda
+            termino_busqueda_codificado = urllib.parse.quote(termino_busqueda)
+            # Crear la URL del enlace a Google con el término de búsqueda
+            respuesta += f"🌐Google: https://www.google.com/search?q={termino_busqueda_codificado}\n\n"
+              # Obtener los videos de la película
+            videos = obtener_videos(movie['id'])
+            
+            # Agregar los trailers y videos a la respuesta
+            for video in videos:
+                if video['type'] == 'Trailer':
+                    respuesta += f"Trailer: {video['name']} - [Ver](https://www.youtube.com/watch?v={video['key']})\n"
+
             enviar_mensaje(mensaje['chat']['id'], respuesta)
     except Exception as e:
         enviar_mensaje(mensaje['chat']['id'], f"Error al obtener películas: {str(e)}")
