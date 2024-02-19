@@ -24,9 +24,9 @@ try:
     if compound_score > 0.7:
         e_animo = "entusiasmado"
     elif 0.5 <= compound_score <= 0.7:
-        e_animo = "contento"
-    elif 0.3 <= compound_score < 0.5:
         e_animo = "emocionado"
+    elif 0.3 <= compound_score < 0.5:
+        e_animo = "contento"
     elif -0.3 <= compound_score <= 0.3:
         e_animo = "neutro"
     elif -0.5 <= compound_score < -0.3:
