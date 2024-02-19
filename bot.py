@@ -3,7 +3,6 @@ import time
 import subprocess
 import os
 from dotenv import load_dotenv
-import random
 import urllib.parse
 
 # Cargar variables de entorno desde el archivo .env
@@ -52,19 +51,13 @@ def manejar_mensaje_normal(mensaje):
     estado_animo = mensaje['text']
     output = subprocess.check_output(["python", "sentiments3.py", estado_animo]).decode().strip()
 
-    aux_generos = [28, 12, 16, 35]
-    aux_generos_option = [35, 16, 10402, 10770]
-    # Seleccionar aleatoriamente uno de los vectores
-    vector_seleccionado = random.choice([aux_generos, aux_generos_option])
-    generos = [99, 18]
-    genero_seleccionado = random.choice(generos)
     genre_ids_dict = {
         "feliz": [28, 12, 878],
         "triste": [18, 80, 10749],
         "neutro": [878, 12, 28, 27],
-        "emocionado":vector_seleccionado,
+        "emocionado":[99, 18],
         "contento": [35, 14, 53],
-        "mal": genero_seleccionado,
+        "mal": [35, 16, 10402, 10770],
         "entusiasmado": [35, 10751, 10749, 35],
         "ansioso": [53, 9648, 10749, 27]
     }
